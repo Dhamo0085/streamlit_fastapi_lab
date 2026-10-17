@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.111.1-009688)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.37.0-FF4B4B)
-![Tests](https://img.shields.io/badge/tests-225%20passed%2C%202%20skipped-brightgreen)
+[![tests](https://github.com/Dhamo0085/streamlit_fastapi_lab/actions/workflows/tests.yml/badge.svg)](https://github.com/Dhamo0085/streamlit_fastapi_lab/actions/workflows/tests.yml)
 
 This repo extends two labs from Prof. Ramin Mohammadi's **MLOps course** (DADS 7305 / IE 7374, Northeastern University): the **FastAPI lab**, which serves an Iris Decision Tree, and the **Streamlit lab**, a dashboard that calls it. The original model, dataset, endpoints and dashboard widgets are all still here. On top of them I fixed 13 documented bugs and added:
 
@@ -141,7 +141,8 @@ git log --oneline               # one commit per improvement
 | `508cab6` | feat(ui): tabs, probabilities, batch CSV, model info, history |
 | `f3096ea` | test(ui): client, dashboard and integration tests |
 | `266f6d7` | ci: requirements, pytest config, GitHub Actions |
-| *(this commit)* | docs: README, lab READMEs, captured evidence |
+| `e1df4f4` | docs: README, lab READMEs, captured evidence |
+| *(latest)* | docs: CI status badge (added after the first green run) |
 
 Raw command output that backs the numbers in this README is in [`docs/evidence/`](docs/evidence):
 [`api_before.txt`](docs/evidence/api_before.txt) (the original API), [`api_after.txt`](docs/evidence/api_after.txt) (this version) and [`test_results.txt`](docs/evidence/test_results.txt) (pytest + coverage).
@@ -387,7 +388,7 @@ Non-UI code (everything except `Dashboard.py`) is at **99.3%** (3 of 452 stateme
 
   I did not click the CSV *download* button.
 
-**CI:** `.github/workflows/tests.yml` runs the same command on Python 3.11 and 3.12 for every push/PR to `main` (and on manual dispatch), then checks that `python FastAPI_Labs/src/train.py` works from the repo root.
+**CI:** `.github/workflows/tests.yml` runs the same command on Python 3.11 and 3.12 for every push/PR to `main` (and on manual dispatch), then checks that `python FastAPI_Labs/src/train.py` works from the repo root. The [first run](https://github.com/Dhamo0085/streamlit_fastapi_lab/actions/runs/39059738219) passed on both versions with the same result as locally: 225 passed, 2 skipped, 92% coverage.
 
 ---
 
