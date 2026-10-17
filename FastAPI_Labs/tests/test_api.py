@@ -169,7 +169,7 @@ def test_out_of_training_range_input_is_accepted_with_warning(client, field, val
     assert r.status_code == 200
     warnings = r.json()["warnings"]
     assert len(warnings) == 1
-    assert warnings[0].startswith(f"{field}={value:g} is outside the range seen in training")
+    assert warnings[0].startswith(f"{field}={float(value)} is outside the range seen in training")
 
 
 def test_warning_text_matches_contract(client):

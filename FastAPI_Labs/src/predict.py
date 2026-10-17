@@ -74,8 +74,8 @@ def check_training_range(sample: dict[str, float]) -> list[str]:
         bounds = ranges.get(name)
         if bounds and not (bounds["min"] <= value <= bounds["max"]):
             warnings.append(
-                f"{name}={value:g} is outside the range seen in training "
-                f"({bounds['min']:g}-{bounds['max']:g}); the prediction may be unreliable"
+                f"{name}={float(value)} is outside the range seen in training "
+                f"({float(bounds['min'])}-{float(bounds['max'])}); the prediction may be unreliable"
             )
     return warnings
 
