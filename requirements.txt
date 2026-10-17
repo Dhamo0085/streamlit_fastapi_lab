@@ -1,0 +1,12 @@
+# Runtime: original lab pins (unchanged)
+scikit-learn==1.5.1
+fastapi[all]==0.111.1
+streamlit==1.37.0
+
+# Imported directly by the dashboard / client helpers
+requests>=2.31
+pandas>=2.0,<3
+
+# Tests
+pytest>=8.0
+pytest-cov>=5.0
