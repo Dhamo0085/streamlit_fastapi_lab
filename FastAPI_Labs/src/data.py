@@ -2,6 +2,18 @@ import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 
+_IRIS = load_iris()
+
+# API-friendly feature names ("sepal length (cm)" -> "sepal_length"), in the
+# column order the model was trained on. These match the IrisData field names.
+FEATURE_NAMES: list[str] = [
+    name.replace(" (cm)", "").replace(" ", "_") for name in _IRIS.feature_names
+]
+
+# Class index -> species name, e.g. TARGET_NAMES[0] == "setosa".
+TARGET_NAMES: list[str] = [str(name) for name in _IRIS.target_names]
+
+
 def load_data():
     """
     Load the Iris dataset and return the features and target values.
