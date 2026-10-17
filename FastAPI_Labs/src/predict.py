@@ -1,3 +1,4 @@
+import json
 from functools import lru_cache
 from pathlib import Path
 
@@ -33,8 +34,50 @@ def load_model():
 
 
 def reset_model_cache() -> None:
-    """Forget any cached model so the next call re-reads it from disk."""
+    """Forget any cached model/metrics so the next call re-reads them from disk."""
     _load_model_from.cache_clear()
+    _load_metrics_from.cache_clear()
+
+
+def metrics_path() -> Path:
+    """metrics.json lives next to the model file written by train.py."""
+    return Path(MODEL_PATH).with_name("metrics.json")
+
+
+@lru_cache(maxsize=4)
+def _load_metrics_from(path: str) -> dict:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def load_metrics() -> dict | None:
+    """Return the training metrics, or None if metrics.json is missing or unreadable."""
+    path = metrics_path()
+    if not path.is_file():
+        return None
+    try:
+        return _load_metrics_from(str(path))
+    except (OSError, ValueError):
+        return None
+
+
+def check_training_range(sample: dict[str, float]) -> list[str]:
+    """
+    Return a warning for each feature outside the range seen during training.
+
+    These inputs are still valid (they passed the API's hard limits); the
+    warning only tells the caller that the model is extrapolating.
+    """
+    metrics = load_metrics() or {}
+    ranges = metrics.get("feature_ranges", {})
+    warnings = []
+    for name, value in sample.items():
+        bounds = ranges.get(name)
+        if bounds and not (bounds["min"] <= value <= bounds["max"]):
+            warnings.append(
+                f"{name}={value:g} is outside the range seen in training "
+                f"({bounds['min']:g}-{bounds['max']:g}); the prediction may be unreliable"
+            )
+    return warnings
 
 
 def model_is_available() -> bool:
