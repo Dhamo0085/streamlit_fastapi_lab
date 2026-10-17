@@ -1,0 +1,38 @@
+$ pytest --cov=FastAPI_Labs/src --cov=Streamlit_Labs/src --cov-report=term-missing
+============================= test session starts ==============================
+platform darwin -- Python 3.12.14, pytest-9.1.1, pluggy-1.7.0
+rootdir: /Users/dhamo_85/Downloads/MLOPs_LAB/API_Labs/streamlit_fastapi_lab
+configfile: pytest.ini
+testpaths: FastAPI_Labs/tests, Streamlit_Labs/tests
+plugins: cov-7.1.0, anyio-4.15.1
+collected 227 items
+
+FastAPI_Labs/tests/test_api.py ......................................... [ 18%]
+.................................................                        [ 39%]
+FastAPI_Labs/tests/test_data.py .......                                  [ 42%]
+FastAPI_Labs/tests/test_predict.py ..................                    [ 50%]
+FastAPI_Labs/tests/test_train.py ...........                             [ 55%]
+Streamlit_Labs/tests/test_client.py .................................... [ 71%]
+.......................................                                  [ 88%]
+Streamlit_Labs/tests/test_dashboard.py ...............ss                 [ 96%]
+Streamlit_Labs/tests/test_integration.py .........                       [100%]
+
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.12.14-final-0 _______________
+
+Name                              Stmts   Miss  Cover   Missing
+---------------------------------------------------------------
+FastAPI_Labs/src/__init__.py          0      0   100%
+FastAPI_Labs/src/data.py             14      0   100%
+FastAPI_Labs/src/main.py            132      0   100%
+FastAPI_Labs/src/predict.py          52      0   100%
+FastAPI_Labs/src/train.py            49      1    98%   118
+Streamlit_Labs/src/Dashboard.py     190     49    74%   54-56, 111-113, 138-176, 270-279
+Streamlit_Labs/src/__init__.py        0      0   100%
+Streamlit_Labs/src/client.py        205      2    99%   219-220
+---------------------------------------------------------------
+TOTAL                               642     52    92%
+=========================== short test summary info ============================
+SKIPPED [1] Streamlit_Labs/tests/test_dashboard.py:168: streamlit 1.37 AppTest cannot drive st.file_uploader; JSON parsing/errors are covered in test_client.py::test_parse_*
+SKIPPED [1] Streamlit_Labs/tests/test_dashboard.py:174: streamlit 1.37 AppTest cannot drive st.file_uploader; CSV validation/batching is covered in test_client.py and test_integration.py
+======================== 225 passed, 2 skipped in 6.92s ========================

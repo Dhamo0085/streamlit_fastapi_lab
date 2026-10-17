@@ -1,3 +1,8 @@
+> **Adapted from the original course lab** ([raminmohammadi/MLOps · Labs/API_Labs/FastAPI_Labs](https://github.com/raminmohammadi/MLOps/tree/main/Labs/API_Labs/FastAPI_Labs)).
+> The tutorial text below is kept as in the original, with the run command fixed (B1).
+> This version also adds input validation, 503/500 status codes, a cached model, `/predict/proba`,
+> `/predict/batch`, `/model-info` and a test suite. Every change is listed in the
+> [root README](../README.md#4-what-i-changed).
 
 ---
 - Video Explanation: [FastAPI lab](https://www.youtube.com/watch?v=KReburHqRIQ&list=PLcS4TrUUc53LeKBIyXAaERFKBJ3dvc9GZ&index=4)
@@ -44,7 +49,7 @@ Note:
 
 ## Running the Lab
 
-1. First step is to train a Decision Tree Classifier(Although you have **`model/iris_model.pkl`** when you cloned from the repo, let's create a new model). To do this, move into **src/** folder with
+1. First step is to train a Decision Tree Classifier(Although you have **`model/iris_model.pkl`** when you cloned from the repo, let's create a new model). To do this, move into **src/** folder with (in this version `python FastAPI_Labs/src/train.py` also works from the repo root, and it writes `model/metrics.json` too)
     ```bash
     cd src
     ```
@@ -56,6 +61,7 @@ Note:
     ```bash
     uvicorn main:app --reload
     ```
+    From the repo root you can instead run `uvicorn main:app --app-dir FastAPI_Labs/src --reload`.
 4. Testing endpoints - to view the documentation of your api model you can use [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) (or) [http://localhost:8000/docs](http://localhost:8000/docs) after you run you run your FastAPI app.
     
 ![API page](assets/docs.png)
@@ -97,6 +103,10 @@ class IrisData(BaseModel):
     sepal_width:float
 ```
 
+> In this version each field is additionally declared with `Field(gt=0, le=10, allow_inf_nan=False)` and the model
+> uses `extra="forbid"`, so negative/zero/huge/NaN/Infinity values and unknown fields are rejected with 422.
+> Field names and types are unchanged. See `src/main.py`.
+
 The **IrisData** class is a [Pydantic model](https://docs.pydantic.dev/latest/concepts/models/) which defines the expected structure of the data for a request body. When you use it as a type annotation for a route operation parameter, FastAPI will perform the following actions:
 - **Request Body Reading:** FastAPI will read the request body as JSON.
 - **Data Conversion:** It will convert the corresponding types, if necessary.
@@ -108,6 +118,8 @@ The **IrisData** class is a [Pydantic model](https://docs.pydantic.dev/latest/co
 class IrisResponse(BaseModel):
     response:int
 ```
+
+> This version keeps `response: int` and adds `species: str` and `warnings: list[str]` (additive, backward compatible).
 
 The **IrisResponse** class is another Pydantic model that defines the structure of the response data for an endpoint. When you specify **response_model=IrisResponse** in a route operation, it tells FastAPI to:
 - **Serialize the Output**: Convert the output data to JSON format according to the IrisResponse model.

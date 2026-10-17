@@ -1,0 +1,31 @@
+# Behaviour of the ORIGINAL lab (baseline commit c3c0feb), captured before any change.
+# Backend started with `uvicorn main:app` from FastAPI_Labs/src unless noted.
+
+$ curl -s -w '\nHTTP %{http_code}\n' http://localhost:8000/
+{"status":"healthy"}
+HTTP 200
+
+$ curl ... POST /predict  (original sample body: 5.1, 3.5, 1.4, 0.2)
+{"response":0}
+HTTP 200
+
+$ curl ... POST /predict  (sepal_length = -5)  -> accepted, no validation (B4)
+{"response":0}
+HTTP 200
+
+$ curl ... POST /predict  (sepal_length = NaN)  -> accepted; NaN reaches the model and a class is returned (B4)
+{"response":0}
+HTTP 200
+
+$ curl ... POST /predict  (unknown extra field "color")  -> silently accepted (B4)
+{"response":0}
+HTTP 200
+
+# Backend started from the repo root (uvicorn main:app --app-dir FastAPI_Labs/src) -> B2
+{"detail":"[Errno 2] No such file or directory: '../model/iris_model.pkl'"}
+HTTP 500
+
+# python FastAPI_Labs/src/train.py from the repo root -> B2 (last lines of traceback)
+with open(filename, "wb") as f:
+         ^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '../model/iris_model.pkl'

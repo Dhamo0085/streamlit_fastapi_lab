@@ -1,3 +1,9 @@
+> **Adapted from the original course lab** ([raminmohammadi/MLOps · Labs/API_Labs/Streamlit_Labs](https://github.com/raminmohammadi/MLOps/tree/main/Labs/API_Labs/Streamlit_Labs)).
+> The tutorial text below is kept as in the original, with documentation drift fixed (B12): the model path,
+> the Windows activate command and the run command. The current `src/Dashboard.py` goes further than this
+> walkthrough (it asks the backend whether the model is loaded, and adds Batch / Model info / History tabs).
+> Every change is listed in the [root README](../README.md#4-what-i-changed).
+
 ---
 - Blog: [FastAPI Lab-1](https://www.mlwithramin.com/blog/streamlit-lab1)
 ---
@@ -31,7 +37,7 @@ source ./streamlitenv/bin/activate
 ```
 For Windows:   
 ```
-.streamlitenv\Scripts\activate
+.\streamlitenv\Scripts\activate
 ```
 
 3. Installing packages from requirements.txt
@@ -71,7 +77,7 @@ import streamlit as st
 from pathlib import Path
 from streamlit.logger import get_logger
 FASTAPI_BACKEND_ENDPOINT = "http://localhost:8000"
-FASTAPI_IRIS_MODEL_LOCATION = Path(__file__).resolve().parents[2] / 'FastAPI_Labs' / 'src' / 'iris_model.pkl'
+FASTAPI_IRIS_MODEL_LOCATION = Path(__file__).resolve().parents[2] / 'FastAPI_Labs' / 'model' / 'iris_model.pkl'
 LOGGER = get_logger(__name__)
 def run():
     st.set_page_config(
@@ -300,11 +306,21 @@ if predict_button:
         st.toast(':red[Model iris_model.pkl not found. Please run the train.py file in FastAPI Lab]', icon="🔥")
 ```
 
-At this point, we have understood and built the server code. To run the streamlit server use the command:
+At this point, we have understood and built the server code. To run the streamlit server, from the `src/` folder use the command:
 
 ```
-streamlit run .\Dashboard.py
+streamlit run Dashboard.py
 ```
+
+or from the repo root (macOS/Linux and Windows alike):
+
+```
+streamlit run Streamlit_Labs/src/Dashboard.py
+```
+
+> In the current `Dashboard.py` the backend address comes from the `FASTAPI_BACKEND_URL` environment variable
+> (default `http://localhost:8000`), and the model check asks the backend (`GET /` → `model_loaded`) instead of
+> looking for `iris_model.pkl` on disk.
 
 ![](./assets/dashboard_1.png)
 
@@ -316,7 +332,7 @@ The above code generates a SPA (Single Page Application) that could act as a sel
 
 ![](./assets/pages_info.png)
 
-To start the fastAPI server use the command
+To start the fastAPI server use the command (from `FastAPI_Labs/src`)
 ```
 uvicorn main:app --reload
 ```

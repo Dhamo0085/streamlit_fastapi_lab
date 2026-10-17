@@ -1,0 +1,20 @@
+$ curl -s http://localhost:8000/
+{"status":"healthy","model_loaded":true}
+$ curl -s -X POST http://localhost:8000/predict -H 'Content-Type: application/json' -d '{"sepal_length": 5.1, "sepal_width": 3.5, "petal_length": 1.4, "petal_width": 0.2}'
+{"response":0,"species":"setosa","warnings":[]}
+$ curl -s -X POST http://localhost:8000/predict -H 'Content-Type: application/json' -d '{"sepal_length": 9.5, "sepal_width": 3.5, "petal_length": 1.4, "petal_width": 0.2}'
+{"response":0,"species":"setosa","warnings":["sepal_length=9.5 is outside the range seen in training (4.3-7.9); the prediction may be unreliable"]}
+$ curl -s -X POST http://localhost:8000/predict/proba -H 'Content-Type: application/json' -d '{"sepal_length": 6.0, "sepal_width": 2.7, "petal_length": 5.0, "petal_width": 1.6}'
+{"response":2,"species":"virginica","probabilities":{"setosa":0.0,"versicolor":0.3333333333333333,"virginica":0.6666666666666666},"warnings":[]}
+$ curl -s -X POST http://localhost:8000/predict/batch -H 'Content-Type: application/json' -d '{"samples": [{"sepal_length": 5.1, "sepal_width": 3.5, "petal_length": 1.4, "petal_width": 0.2}, {"sepal_length": 6.4, "sepal_width": 3.2, "petal_length": 4.5, "petal_width": 1.5}, {"sepal_length": 6.7, "sepal_width": 3.0, "petal_length": 5.2, "petal_width": 2.3}]}'
+{"count":3,"predictions":[{"index":0,"response":0,"species":"setosa","warnings":[]},{"index":1,"response":1,"species":"versicolor","warnings":[]},{"index":2,"response":2,"species":"virginica","warnings":[]}]}
+$ curl -s http://localhost:8000/model-info
+{"model_type":"DecisionTreeClassifier","max_depth":3,"classes":["setosa","versicolor","virginica"],"feature_names":["sepal_length","sepal_width","petal_length","petal_width"],"metrics_available":true,"metrics":{"model_type":"DecisionTreeClassifier","params":{"max_depth":3,"random_state":12},"test_accuracy":0.9556,"cv_folds":5,"cv_accuracy_mean":0.9429,"cv_accuracy_std":0.0356,"confusion_matrix":[[20,0,0],[0,12,2],[0,0,11]],"target_names":["setosa","versicolor","virginica"],"feature_names":["sepal_length","sepal_width","petal_length","petal_width"],"feature_importances":{"sepal_length":0.0,"sepal_width":0.0,"petal_length":0.4553,"petal_width":0.5447},"feature_ranges":{"sepal_length":{"min":4.3,"max":7.9},"sepal_width":{"min":2.0,"max":4.1},"petal_length":{"min":1.0,"max":6.9},"petal_width":{"min":0.1,"max":2.5}},"n_train":105,"n_test":45,"sklearn_version":"1.5.1","trained_at":"2026-10-17T18:30:24+00:00"}}
+$ curl -s -w '\nHTTP %{http_code}\n' -X POST http://localhost:8000/predict -H 'Content-Type: application/json' -d '{"sepal_length": -5, "sepal_width": 3.5, "petal_length": 1.4, "petal_width": 0.2}'
+{"detail":[{"type":"greater_than","loc":["body","sepal_length"],"msg":"Input should be greater than 0","input":-5,"ctx":{"gt":0.0}}]}
+HTTP 422
+
+$ curl -s -w '\nHTTP %{http_code}\n' -X POST http://localhost:8000/predict -H 'Content-Type: application/json' -d '{"sepal_length": NaN, "sepal_width": 3.5, "petal_length": 1.4, "petal_width": 0.2, "color": "blue"}'
+{"detail":[{"type":"finite_number","loc":["body","sepal_length"],"msg":"Input should be a finite number","input":"nan"},{"type":"extra_forbidden","loc":["body","color"],"msg":"Extra inputs are not permitted","input":"blue"}]}
+HTTP 422
+
