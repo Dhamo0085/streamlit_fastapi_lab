@@ -1,89 +1,112 @@
-import json
-import requests
 import streamlit as st
-from pathlib import Path
 from streamlit.logger import get_logger
 
-FASTAPI_BACKEND_ENDPOINT = "http://localhost:8000"
-FASTAPI_IRIS_MODEL_LOCATION = Path(__file__).resolve().parents[2] / 'FastAPI_Labs' / 'model' / 'iris_model.pkl'
+from client import (
+    FLOWER_TYPES,
+    build_payload,
+    check_backend,
+    get_backend_url,
+    parse_uploaded_json,
+    post_predict,
+    validate_payload,
+)
 
-FLOWER_TYPES = {0: "setosa", 1: "versicolor", 2: "virginica"}
+# Configurable via the FASTAPI_BACKEND_URL environment variable (B11).
+FASTAPI_BACKEND_ENDPOINT = get_backend_url()
+
 LOGGER = get_logger(__name__)
+
 
 def predict_flower(client_input: dict) -> None:
     """Send prediction request and display result."""
     result_container = st.empty()
-    try:
-        with st.spinner('Predicting...'):
-            response = requests.post(
-                f'{FASTAPI_BACKEND_ENDPOINT}/predict',
-                json=client_input,
-                timeout=10
-            )
-        
-        if response.status_code == 200:
-            iris_content = response.json()
-            flower_class = iris_content.get("response")
-            if flower_class in FLOWER_TYPES:
-                result_container.success(f"The flower predicted is: {FLOWER_TYPES[flower_class]}")
-            else:
-                result_container.error("Invalid prediction response")
-                LOGGER.error(f"Unexpected response: {flower_class}")
+    problems = validate_payload(client_input)
+    if problems:
+        result_container.error("Cannot predict: " + " ".join(problems))
+        return
+
+    with st.spinner('Predicting...'):
+        result = post_predict(client_input, base_url=FASTAPI_BACKEND_ENDPOINT)
+
+    if result.ok:
+        flower_class = result.data.get("response")
+        if flower_class in FLOWER_TYPES:
+            result_container.success(f"The flower predicted is: {FLOWER_TYPES[flower_class]}")
         else:
-            st.toast(f':red[Status: {response.status_code}. Check backend]', icon="🔴")
-    except Exception as e:
-        st.toast(':red[Backend error. Refresh and retry]', icon="🔴")
-        LOGGER.error(f"Prediction error: {e}")
+            result_container.error("Invalid prediction response")
+            LOGGER.error(f"Unexpected response: {flower_class}")
+    else:
+        LOGGER.error(f"Prediction error: {result.error}")
+        st.toast(f':red[{result.error}]', icon="🔴")
+        result_container.error(result.error)
+
+
+def render_backend_status():
+    """Sidebar indicator. Returns the BackendStatus so callers can reuse it."""
+    status = check_backend(FASTAPI_BACKEND_ENDPOINT)
+    if status.state == "online":
+        # B7: one box per state (the original nested st.warning inside st.success).
+        st.success("Backend online ✅")
+        if status.model_loaded is False:
+            st.warning("Model not loaded on the backend. Run train.py 🔥")
+    elif status.state == "problem":
+        LOGGER.error(f"Backend problem: {status.message}")
+        st.warning("Problem connecting 😭")
+    else:
+        LOGGER.error(f"Backend error: {status.message}")
+        st.error("Backend offline 😱")
+    return status
+
 
 def run():
     st.set_page_config(page_title="Iris Flower Prediction Demo", page_icon="🪻")
 
     with st.sidebar:
-        # Backend status check
-        try:
-            backend_request = requests.get(FASTAPI_BACKEND_ENDPOINT, timeout=5)
-            st.success("Backend online ✅" if backend_request.status_code == 200 else st.warning("Problem connecting 😭"))
-        except requests.ConnectionError as ce:
-            LOGGER.error(f"Backend error: {ce}")
-            st.error("Backend offline 😱")
+        backend_status = render_backend_status()
 
         st.info("Configure parameters")
-        
+
         sepal_length = st.slider("Sepal Length", 4.3, 7.9, 4.3, 0.1, help="cm")
         sepal_width = st.slider("Sepal Width", 2.0, 4.4, 2.0, 0.1, help="cm")
         petal_length = st.slider("Petal Length", 1.0, 6.9, 1.0, 0.1, help="cm")
         petal_width = st.slider("Petal Width", 0.1, 2.5, 0.1, 0.1, help="cm")
-        
+
         test_input_file = st.file_uploader('Upload test prediction file', type=['json'])
-        
+
+        st.session_state["IS_JSON_FILE_AVAILABLE"] = False
         if test_input_file:
-            st.write('Preview file')
-            test_input_data = json.load(test_input_file)
-            st.json(test_input_data)
-            st.session_state["IS_JSON_FILE_AVAILABLE"] = True
-            st.session_state["test_input_data"] = test_input_data
-        else:
-            st.session_state["IS_JSON_FILE_AVAILABLE"] = False
-        
+            # B9: malformed JSON or a missing "input_test" key shows an error
+            # instead of crashing the page.
+            upload = parse_uploaded_json(test_input_file)
+            if upload.data is not None:
+                st.write('Preview file')
+                st.json(upload.data)
+            if upload.error:
+                st.error(upload.error)
+            else:
+                st.session_state["IS_JSON_FILE_AVAILABLE"] = True
+                st.session_state["test_input_data"] = upload.data
+                st.caption("ℹ️ Values from the uploaded file will be used instead of the sliders.")
+
         predict_button = st.button('Predict')
 
     st.write("# Iris Flower Prediction! 🪻")
-    
+
     if predict_button:
-        if FASTAPI_IRIS_MODEL_LOCATION.is_file():
+        # B8: ask the backend whether its model is loaded instead of looking
+        # for the .pkl file in a sibling folder on this machine.
+        if not backend_status.online:
+            st.toast(':red[Backend offline. Start uvicorn and refresh]', icon="🔴")
+        elif backend_status.model_loaded is False:
+            LOGGER.warning('Backend reports model not loaded')
+            st.toast(':red[Model not found. Run train.py]', icon="🔥")
+        else:
             if st.session_state.get("IS_JSON_FILE_AVAILABLE"):
                 client_input = st.session_state["test_input_data"]['input_test']
+                st.info("Using values from the uploaded JSON file (sliders ignored).")
             else:
-                client_input = {
-                    "petal_length": petal_length,
-                    "sepal_length": sepal_length,
-                    "petal_width": petal_width,
-                    "sepal_width": sepal_width
-                }
+                client_input = build_payload(sepal_length, sepal_width, petal_length, petal_width)
             predict_flower(client_input)
-        else:
-            LOGGER.warning('iris_model.pkl not found')
-            st.toast(':red[Model not found. Run train.py]', icon="🔥")
 
 if __name__ == "__main__":
     run()
