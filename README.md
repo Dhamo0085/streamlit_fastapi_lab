@@ -5,11 +5,13 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.37.0-FF4B4B)
 [![tests](https://github.com/Dhamo0085/streamlit_fastapi_lab/actions/workflows/tests.yml/badge.svg)](https://github.com/Dhamo0085/streamlit_fastapi_lab/actions/workflows/tests.yml)
 
-This repo extends two labs from Prof. Ramin Mohammadi's **MLOps course** (DADS 7305 / IE 7374, Northeastern University): the **FastAPI lab**, which serves an Iris Decision Tree, and the **Streamlit lab**, a dashboard that calls it. The original model, dataset, endpoints and dashboard widgets are all still here. On top of them I fixed 13 documented bugs and added:
+This repo extends the **API_Labs** lab from Prof. Ramin Mohammadi's **MLOps course** (DADS 7305 / IE 7374, Northeastern University). The lab has two parts: the **FastAPI** backend, which serves an Iris Decision Tree, and the **Streamlit** dashboard that calls it. The original model, dataset, endpoints and dashboard widgets are all still here. On top of them I fixed 13 documented bugs and added:
 
 - input validation, proper error codes, cached model loading, probabilities, batch prediction and a model-info endpoint;
 - a tabbed dashboard with charts, CSV upload/download and prediction history;
 - **227 tests** (the original had none) and GitHub Actions CI.
+
+> **Submission:** this is a single submission of the course's **API_Labs** lab: the Streamlit dashboard (`Streamlit_Labs/`) plus the FastAPI backend it requires (`FastAPI_Labs/`).
 
 Original labs: [raminmohammadi/MLOps → Labs/API_Labs](https://github.com/raminmohammadi/MLOps/tree/main/Labs/API_Labs) (`FastAPI_Labs/` and `Streamlit_Labs/`; `FLASK_GCP_LAB/` was not used).
 
