@@ -434,7 +434,7 @@ streamlit_fastapi_lab/
 
 ## 9. Screenshots
 
-> Screenshots still need to be added to [`docs/screenshots/`](docs/screenshots). The images below will show up once the files are committed.
+> Taken on 2026-10-18 from the running app (`uvicorn` + `streamlit run`) and the CI run for commit `4507402`.
 
 | Dashboard: Predict tab | Dashboard: Batch tab |
 |---|---|
